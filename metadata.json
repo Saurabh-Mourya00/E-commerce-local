@@ -1,0 +1,6 @@
+{
+  "name": "ARMA Store",
+  "description": "Hyperlocal Grocery Marketplace for ARMA Store",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
