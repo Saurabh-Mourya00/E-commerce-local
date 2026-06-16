@@ -1,6 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+<<<<<<< HEAD
+=======
+import { useRouter } from 'next/navigation';
+>>>>>>> ff70d80 (needed fix)
 import { CATEGORIES, INITIAL_PRODUCTS } from '@/lib/data';
 import { useCartStore, useCartTotal, Product } from '@/lib/store';
 
@@ -9,17 +13,26 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
   const [categories, setCategories] = useState(CATEGORIES);
+<<<<<<< HEAD
+=======
+  const [isLoading, setIsLoading] = useState(true);
+>>>>>>> ff70d80 (needed fix)
   
   const { items, addItem, removeItem, updateQuantity } = useCartStore();
   const total = useCartTotal();
   const itemCount = items.reduce((acc, item) => acc + item.quantity, 0);
+  const router = useRouter();
 
   useEffect(() => {
     async function fetchFromBackend() {
       try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api';
 
+<<<<<<< HEAD
         // Fetch products
+=======
+        // Fetch products from Django
+>>>>>>> ff70d80 (needed fix)
         const prodRes = await fetch(`${apiUrl}/products/`);
         if (prodRes.ok) {
           const data = await prodRes.json();
@@ -27,14 +40,22 @@ export default function Home() {
             const mapped: Product[] = data.map((p: any) => ({
               id: `backend-${p.id}`,
               name: p.name,
+<<<<<<< HEAD
               category: p.category_name || 'Daily Essentials',
+=======
+              category: p.category_name || 'Uncategorized',
+>>>>>>> ff70d80 (needed fix)
               price: Number(p.price),
               imageIcon: p.image_icon || '🛒',
               packSize: p.pack_size || '',
               inStock: p.in_stock !== false,
               image: p.image || undefined,
             }));
+<<<<<<< HEAD
             // Merge: keep local products + add backend products (avoid duplicates by name)
+=======
+            // Merge: keep local + add backend (dedupe by name)
+>>>>>>> ff70d80 (needed fix)
             setProducts(prev => {
               const localNames = new Set(prev.map(p => p.name.toLowerCase()));
               const newProducts = mapped.filter(p => !localNames.has(p.name.toLowerCase()));
@@ -43,7 +64,11 @@ export default function Home() {
           }
         }
 
+<<<<<<< HEAD
         // Fetch categories
+=======
+        // Fetch categories from Django admin
+>>>>>>> ff70d80 (needed fix)
         const catRes = await fetch(`${apiUrl}/categories/`);
         if (catRes.ok) {
           const catData = await catRes.json();
@@ -52,7 +77,11 @@ export default function Home() {
               name: c.name,
               icon: c.icon || '📦',
             }));
+<<<<<<< HEAD
             // Merge: keep local categories + add any new ones from backend
+=======
+            // Merge: keep local + add any new backend categories
+>>>>>>> ff70d80 (needed fix)
             setCategories(prev => {
               const localNames = new Set(prev.map(c => c.name.toLowerCase()));
               const newCats = backendCats.filter((c: any) => !localNames.has(c.name.toLowerCase()));
@@ -62,6 +91,11 @@ export default function Home() {
         }
       } catch (err) {
         console.error('Error fetching from Django backend:', err);
+<<<<<<< HEAD
+=======
+      } finally {
+        setIsLoading(false);
+>>>>>>> ff70d80 (needed fix)
       }
     }
     fetchFromBackend();
@@ -100,7 +134,7 @@ export default function Home() {
           </div>
         </div>
         <div className="flex items-center gap-4 justify-end">
-          <button className="relative p-2 text-slate-600 hover:bg-slate-50 rounded-full">
+          <button className="relative p-2 text-slate-600 hover:bg-slate-50 rounded-full" onClick={() => router.push('/cart')}>
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
             {itemCount > 0 && (
               <span className="absolute top-0 right-0 w-4 h-4 bg-orange-500 text-white text-[10px] flex items-center justify-center rounded-full">{itemCount}</span>
@@ -129,7 +163,7 @@ export default function Home() {
               <div 
                 key={category.name}
                 onClick={() => setActiveCategory(category.name)}
-                className={`flex items-center gap-3 p-3 rounded-xl font-semibold cursor-pointer transition-colors ${activeCategory === category.name ? 'bg-emerald-50 text-emerald-700' : 'hover:bg-slate-50 text-slate-600'}`}
+                className={`flex items-center gap-3 p-3 rounded-xl font-semibold cursor-pointer transition-colors ${activeCategory.toLowerCase() === category.name.toLowerCase() ? 'bg-emerald-50 text-emerald-700' : 'hover:bg-slate-50 text-slate-600'}`}
               >
                 <span className="text-lg">{category.icon}</span> {category.name}
               </div>
@@ -160,7 +194,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Checkout & Summary Card (was Delivery Status, let's swap to show checkout more prominently, or keep as is) */}
+        {/* Checkout & Summary Card */}
         <div className="col-span-1 md:col-span-3 md:row-span-3 bg-orange-600 rounded-3xl p-6 text-white flex flex-col justify-between min-h-[250px]">
           <div>
             <h3 className="font-bold text-lg leading-tight mb-4 text-white">Ready for <br/>Secure Checkout?</h3>
@@ -182,14 +216,16 @@ export default function Home() {
           </div>
           <button 
             disabled={itemCount === 0}
+            onClick={() => router.push('/cart')}
             className="w-full py-4 mt-6 bg-white text-orange-600 disabled:opacity-50 font-black rounded-2xl shadow-xl shadow-orange-900/20 active:scale-95 transition-transform uppercase tracking-wider text-sm"
           >
             {itemCount === 0 ? "Cart is empty" : "Proceed to Pay"}
           </button>
         </div>
 
-        {/* Popular Items Mini-Grid (Dynamic based on selected category) */}
+        {/* Product Grid */}
         <div className="col-span-1 md:col-span-9 md:row-span-3 grid grid-cols-2 lg:grid-cols-4 gap-4 overflow-y-auto no-scrollbar pb-2">
+<<<<<<< HEAD
           {filteredProducts.map((product) => (
             <div key={product.id} className="bg-white rounded-3xl border border-slate-200 p-4 flex flex-col h-[200px] hover:shadow-md transition-shadow">
               <div className="bg-slate-50 rounded-2xl h-20 mb-3 flex items-center justify-center text-4xl overflow-hidden relative">
@@ -246,6 +282,61 @@ export default function Home() {
               </div>
             </div>
           ))}
+=======
+          {filteredProducts.map((product) => {
+            const cartItem = items.find(item => item.id === product.id);
+            return (
+              <div key={product.id} className="bg-white rounded-3xl border border-slate-200 p-4 flex flex-col h-[200px] hover:shadow-md transition-shadow">
+                <div className="bg-slate-50 rounded-2xl h-20 mb-3 flex items-center justify-center text-4xl overflow-hidden relative">
+                  {product.image ? (
+                    <img 
+                      src={product.image.startsWith('http') ? product.image : `http://127.0.0.1:8000${product.image}`} 
+                      alt={product.name} 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    product.imageIcon
+                  )}
+                </div>
+                <h4 className="text-sm font-bold text-slate-800 line-clamp-1">{product.name}</h4>
+                <p className="text-[10px] text-slate-400 mt-1">{product.packSize}</p>
+                <div className="mt-auto flex items-center justify-between">
+                  <span className="font-bold text-sm text-emerald-600">₹{product.price}</span>
+                  {cartItem ? (
+                    <div className="flex items-center gap-1">
+                      <button 
+                        className="w-6 h-6 bg-slate-200 text-slate-700 rounded-full flex items-center justify-center font-bold text-xs active:scale-90 transition-transform hover:bg-slate-300"
+                        onClick={() => {
+                          if (cartItem.quantity <= 1) {
+                            removeItem(product.id);
+                          } else {
+                            updateQuantity(product.id, cartItem.quantity - 1);
+                          }
+                        }}
+                      >
+                        −
+                      </button>
+                      <span className="w-5 text-center text-xs font-bold text-emerald-700">{cartItem.quantity}</span>
+                      <button 
+                        className="w-6 h-6 bg-emerald-600 text-white rounded-full flex items-center justify-center font-bold text-xs active:scale-90 transition-transform"
+                        onClick={() => addItem(product)}
+                      >
+                        +
+                      </button>
+                    </div>
+                  ) : (
+                    <button 
+                      className="w-6 h-6 bg-emerald-600 text-white rounded-full flex items-center justify-center font-bold pb-0.5 active:scale-90 transition-transform"
+                      onClick={() => addItem(product)}
+                    >
+                      +
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+>>>>>>> ff70d80 (needed fix)
           {filteredProducts.length === 0 && (
              <div className="col-span-full h-full flex items-center justify-center text-slate-400 text-sm font-medium">
                No products found. Try a different category.
