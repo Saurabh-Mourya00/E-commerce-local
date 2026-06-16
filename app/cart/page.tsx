@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/lib/AuthContext';
-import { useCartStore } from '@/lib/store';
+import { useCartStore, useCartTotal } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,7 +16,8 @@ import { toast } from 'sonner';
 import { Separator } from '@/components/ui/separator';
 
 export default function CartPage() {
-  const { items, removeItem, updateQuantity, total, clearCart } = useCartStore();
+  const { items, removeItem, updateQuantity, clearCart } = useCartStore();
+  const total = useCartTotal();
   const { user, userData } = useAuth();
   const router = useRouter();
   const [address, setAddress] = useState(userData?.savedAddresses?.[0] || '');

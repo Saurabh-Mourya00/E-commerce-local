@@ -147,11 +147,15 @@ CORS_ALLOW_CREDENTIALS = True
 
 
 # ============================================================
-# Cloudinary Configuration
+# Cloudinary / Local Media Configuration
 # ============================================================
 CLOUDINARY_URL = os.environ.get('CLOUDINARY_URL', '')
 
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+if CLOUDINARY_URL and 'dummy' not in CLOUDINARY_URL and '111111111111111' not in CLOUDINARY_URL:
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+else:
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = BASE_DIR / 'media'
 
 
 # ============================================================
