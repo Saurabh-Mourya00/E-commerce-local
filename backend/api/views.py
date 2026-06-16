@@ -94,6 +94,49 @@ class CreateRazorpayOrderView(APIView):
 
 
 # ============================================================
+# Razorpay: Verify Payment Signature
+# ============================================================
+
+class VerifyRazorpayPaymentView(APIView):
+    """
+    Verifies the Razorpay payment signature after successful payment.
+    Expects POST body: { razorpay_order_id, razorpay_payment_id, razorpay_signature }
+    """
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        try:
+            client = razorpay.Client(
+                auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET)
+            )
+
+            params = {
+                'razorpay_order_id': request.data.get('razorpay_order_id'),
+                'razorpay_payment_id': request.data.get('razorpay_payment_id'),
+                'razorpay_signature': request.data.get('razorpay_signature'),
+            }
+
+            client.utility.verify_payment_signature(params)
+
+            return Response({
+                "status": "success",
+                "message": "Payment verified successfully",
+                "payment_id": params['razorpay_payment_id'],
+            })
+
+        except razorpay.errors.SignatureVerificationError:
+            return Response(
+                {"error": "Payment signature verification failed"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+
+# ============================================================
 # Health Check (useful for verifying server is up)
 # ============================================================
 

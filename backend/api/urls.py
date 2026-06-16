@@ -11,8 +11,9 @@ urlpatterns = [
     # ViewSet routes
     path('', include(router.urls)),
 
-    # Razorpay payment order
+    # Razorpay payment
     path('create-order/', views.CreateRazorpayOrderView.as_view(), name='create-razorpay-order'),
+    path('verify-payment/', views.VerifyRazorpayPaymentView.as_view(), name='verify-razorpay-payment'),
 
     # Health check
     path('health/', views.HealthCheckView.as_view(), name='health-check'),

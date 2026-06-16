@@ -8,6 +8,7 @@ export interface Product {
   imageIcon: string;
   packSize: string;
   inStock: boolean;
+  image?: string;
 }
 
 export interface CartItem extends Product {
@@ -20,7 +21,6 @@ interface CartState {
   removeItem: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
-  total: number;
 }
 
 export const useCartStore = create<CartState>()((set, get) => ({
@@ -50,7 +50,9 @@ export const useCartStore = create<CartState>()((set, get) => ({
     });
   },
   clearCart: () => set({ items: [] }),
-  get total() {
-    return get().items.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  },
 }));
+
+// Reactive selector to compute cart total — re-renders on every items change
+export const useCartTotal = () => useCartStore((state) =>
+  state.items.reduce((acc, item) => acc + item.price * item.quantity, 0)
+);

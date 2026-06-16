@@ -107,6 +107,10 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+# Media files (user uploads)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -147,11 +151,13 @@ CORS_ALLOW_CREDENTIALS = True
 
 
 # ============================================================
-# Cloudinary Configuration
+# Cloudinary / Local Media Configuration
 # ============================================================
 CLOUDINARY_URL = os.environ.get('CLOUDINARY_URL', '')
 
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+# Use Cloudinary if real credentials are provided, otherwise local filesystem
+if CLOUDINARY_URL and 'dummy' not in CLOUDINARY_URL and '111111111111111' not in CLOUDINARY_URL:
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 
 # ============================================================

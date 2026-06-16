@@ -1,18 +1,79 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { CATEGORIES, INITIAL_PRODUCTS } from '@/lib/data';
-import { useCartStore, Product } from '@/lib/store';
+import { useCartStore, useCartTotal, Product } from '@/lib/store';
 
 export default function Home() {
-  const [activeCategory, setActiveCategory] = useState('Daily Essentials');
+  const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
+  const [categories, setCategories] = useState(CATEGORIES);
+  const [isLoading, setIsLoading] = useState(true);
   
-  const { items, addItem, total } = useCartStore();
+  const { items, addItem, removeItem, updateQuantity } = useCartStore();
+  const total = useCartTotal();
   const itemCount = items.reduce((acc, item) => acc + item.quantity, 0);
+  const router = useRouter();
 
-  const filteredProducts = INITIAL_PRODUCTS.filter(p => {
-    const matchesCategory = activeCategory === 'All' || p.category === activeCategory;
+  useEffect(() => {
+    async function fetchFromBackend() {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api';
+
+        // Fetch products from Django
+        const prodRes = await fetch(`${apiUrl}/products/`);
+        if (prodRes.ok) {
+          const data = await prodRes.json();
+          if (data && data.length > 0) {
+            const mapped: Product[] = data.map((p: any) => ({
+              id: `backend-${p.id}`,
+              name: p.name,
+              category: p.category_name || 'Uncategorized',
+              price: Number(p.price),
+              imageIcon: p.image_icon || '🛒',
+              packSize: p.pack_size || '',
+              inStock: p.in_stock !== false,
+              image: p.image || undefined,
+            }));
+            // Merge: keep local + add backend (dedupe by name)
+            setProducts(prev => {
+              const localNames = new Set(prev.map(p => p.name.toLowerCase()));
+              const newProducts = mapped.filter(p => !localNames.has(p.name.toLowerCase()));
+              return [...prev, ...newProducts];
+            });
+          }
+        }
+
+        // Fetch categories from Django admin
+        const catRes = await fetch(`${apiUrl}/categories/`);
+        if (catRes.ok) {
+          const catData = await catRes.json();
+          if (catData && catData.length > 0) {
+            const backendCats = catData.map((c: any) => ({
+              name: c.name,
+              icon: c.icon || '📦',
+            }));
+            // Merge: keep local + add any new backend categories
+            setCategories(prev => {
+              const localNames = new Set(prev.map(c => c.name.toLowerCase()));
+              const newCats = backendCats.filter((c: any) => !localNames.has(c.name.toLowerCase()));
+              return [...prev, ...newCats];
+            });
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching from Django backend:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchFromBackend();
+  }, []);
+
+  const filteredProducts = products.filter(p => {
+    const matchesCategory = activeCategory === 'All' || p.category.toLowerCase() === activeCategory.toLowerCase();
     const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
@@ -44,7 +105,7 @@ export default function Home() {
           </div>
         </div>
         <div className="flex items-center gap-4 justify-end">
-          <button className="relative p-2 text-slate-600 hover:bg-slate-50 rounded-full">
+          <button className="relative p-2 text-slate-600 hover:bg-slate-50 rounded-full" onClick={() => router.push('/cart')}>
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
             {itemCount > 0 && (
               <span className="absolute top-0 right-0 w-4 h-4 bg-orange-500 text-white text-[10px] flex items-center justify-center rounded-full">{itemCount}</span>
@@ -69,11 +130,11 @@ export default function Home() {
             >
               <span className="text-lg">🛒</span> All Products
             </div>
-            {CATEGORIES.map(category => (
+            {categories.map(category => (
               <div 
                 key={category.name}
                 onClick={() => setActiveCategory(category.name)}
-                className={`flex items-center gap-3 p-3 rounded-xl font-semibold cursor-pointer transition-colors ${activeCategory === category.name ? 'bg-emerald-50 text-emerald-700' : 'hover:bg-slate-50 text-slate-600'}`}
+                className={`flex items-center gap-3 p-3 rounded-xl font-semibold cursor-pointer transition-colors ${activeCategory.toLowerCase() === category.name.toLowerCase() ? 'bg-emerald-50 text-emerald-700' : 'hover:bg-slate-50 text-slate-600'}`}
               >
                 <span className="text-lg">{category.icon}</span> {category.name}
               </div>
@@ -104,7 +165,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Checkout & Summary Card (was Delivery Status, let's swap to show checkout more prominently, or keep as is) */}
+        {/* Checkout & Summary Card */}
         <div className="col-span-1 md:col-span-3 md:row-span-3 bg-orange-600 rounded-3xl p-6 text-white flex flex-col justify-between min-h-[250px]">
           <div>
             <h3 className="font-bold text-lg leading-tight mb-4 text-white">Ready for <br/>Secure Checkout?</h3>
@@ -126,32 +187,68 @@ export default function Home() {
           </div>
           <button 
             disabled={itemCount === 0}
+            onClick={() => router.push('/cart')}
             className="w-full py-4 mt-6 bg-white text-orange-600 disabled:opacity-50 font-black rounded-2xl shadow-xl shadow-orange-900/20 active:scale-95 transition-transform uppercase tracking-wider text-sm"
           >
             {itemCount === 0 ? "Cart is empty" : "Proceed to Pay"}
           </button>
         </div>
 
-        {/* Popular Items Mini-Grid (Dynamic based on selected category) */}
+        {/* Product Grid */}
         <div className="col-span-1 md:col-span-9 md:row-span-3 grid grid-cols-2 lg:grid-cols-4 gap-4 overflow-y-auto no-scrollbar pb-2">
-          {filteredProducts.map((product) => (
-            <div key={product.id} className="bg-white rounded-3xl border border-slate-200 p-4 flex flex-col h-[200px] hover:shadow-md transition-shadow">
-              <div className="bg-slate-50 rounded-2xl h-20 mb-3 flex items-center justify-center text-4xl">
-                {product.imageIcon}
+          {filteredProducts.map((product) => {
+            const cartItem = items.find(item => item.id === product.id);
+            return (
+              <div key={product.id} className="bg-white rounded-3xl border border-slate-200 p-4 flex flex-col h-[200px] hover:shadow-md transition-shadow">
+                <div className="bg-slate-50 rounded-2xl h-20 mb-3 flex items-center justify-center text-4xl overflow-hidden relative">
+                  {product.image ? (
+                    <img 
+                      src={product.image.startsWith('http') ? product.image : `http://127.0.0.1:8000${product.image}`} 
+                      alt={product.name} 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    product.imageIcon
+                  )}
+                </div>
+                <h4 className="text-sm font-bold text-slate-800 line-clamp-1">{product.name}</h4>
+                <p className="text-[10px] text-slate-400 mt-1">{product.packSize}</p>
+                <div className="mt-auto flex items-center justify-between">
+                  <span className="font-bold text-sm text-emerald-600">₹{product.price}</span>
+                  {cartItem ? (
+                    <div className="flex items-center gap-1">
+                      <button 
+                        className="w-6 h-6 bg-slate-200 text-slate-700 rounded-full flex items-center justify-center font-bold text-xs active:scale-90 transition-transform hover:bg-slate-300"
+                        onClick={() => {
+                          if (cartItem.quantity <= 1) {
+                            removeItem(product.id);
+                          } else {
+                            updateQuantity(product.id, cartItem.quantity - 1);
+                          }
+                        }}
+                      >
+                        −
+                      </button>
+                      <span className="w-5 text-center text-xs font-bold text-emerald-700">{cartItem.quantity}</span>
+                      <button 
+                        className="w-6 h-6 bg-emerald-600 text-white rounded-full flex items-center justify-center font-bold text-xs active:scale-90 transition-transform"
+                        onClick={() => addItem(product)}
+                      >
+                        +
+                      </button>
+                    </div>
+                  ) : (
+                    <button 
+                      className="w-6 h-6 bg-emerald-600 text-white rounded-full flex items-center justify-center font-bold pb-0.5 active:scale-90 transition-transform"
+                      onClick={() => addItem(product)}
+                    >
+                      +
+                    </button>
+                  )}
+                </div>
               </div>
-              <h4 className="text-sm font-bold text-slate-800 line-clamp-1">{product.name}</h4>
-              <p className="text-[10px] text-slate-400 mt-1">{product.packSize}</p>
-              <div className="mt-auto flex items-center justify-between">
-                <span className="font-bold text-sm text-emerald-600">₹{product.price}</span>
-                <button 
-                  className="w-6 h-6 bg-emerald-600 text-white rounded-full flex items-center justify-center font-bold pb-0.5 active:scale-90 transition-transform"
-                  onClick={() => addItem(product)}
-                >
-                  +
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
           {filteredProducts.length === 0 && (
              <div className="col-span-full h-full flex items-center justify-center text-slate-400 text-sm font-medium">
                No products found. Try a different category.
