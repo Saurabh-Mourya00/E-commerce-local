@@ -1,27 +1,25 @@
 """
 Django settings for ARMA Store backend project.
+Production: Render + Neon PostgreSQL
 """
 
-import os
 from pathlib import Path
 from datetime import timedelta
 
 import dj_database_url
-from dotenv import load_dotenv
+from decouple import config, Csv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Load environment variables from .env file
-load_dotenv(BASE_DIR / '.env')
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-fallback-key-change-me')
+SECRET_KEY = config('SECRET_KEY', default='django-insecure-fallback-key-change-me')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 'yes')
+DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=Csv())
 
 
 # Application definition
@@ -48,6 +46,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',  # Must be at the top
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Serve static files on Render
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -78,12 +77,13 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 
 # Database
-# Uses SQLite locally. Set DATABASE_URL env var to use PostgreSQL (Supabase).
+# Uses Neon PostgreSQL in production via DATABASE_URL.
+# Falls back to SQLite for local development if DATABASE_URL is not set.
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.parse(
+        config('DATABASE_URL', default=f'sqlite:///{BASE_DIR / "db.sqlite3"}'),
+        conn_max_age=600,
+    )
 }
 
 
@@ -106,6 +106,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Media files (user uploads)
 MEDIA_URL = '/media/'
@@ -142,18 +143,29 @@ SIMPLE_JWT = {
 # ============================================================
 # CORS Configuration — Allow Next.js frontend
 # ============================================================
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
-]
+CORS_ALLOWED_ORIGINS = config(
+    'CORS_ALLOWED_ORIGINS',
+    default='http://localhost:3000,http://127.0.0.1:3000',
+    cast=Csv(),
+)
 
 CORS_ALLOW_CREDENTIALS = True
 
 
 # ============================================================
+# Production Security (only when DEBUG is False)
+# ============================================================
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_SSL_REDIRECT = False  # Render handles SSL termination
+
+
+# ============================================================
 # Cloudinary / Local Media Configuration
 # ============================================================
-CLOUDINARY_URL = os.environ.get('CLOUDINARY_URL', '')
+CLOUDINARY_URL = config('CLOUDINARY_URL', default='')
 
 # Use Cloudinary if real credentials are provided, otherwise local filesystem
 if CLOUDINARY_URL and 'dummy' not in CLOUDINARY_URL and '111111111111111' not in CLOUDINARY_URL:
@@ -163,12 +175,12 @@ if CLOUDINARY_URL and 'dummy' not in CLOUDINARY_URL and '111111111111111' not in
 # ============================================================
 # Razorpay Configuration
 # ============================================================
-RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', '')
-RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', '')
+RAZORPAY_KEY_ID = config('RAZORPAY_KEY_ID', default='')
+RAZORPAY_KEY_SECRET = config('RAZORPAY_KEY_SECRET', default='')
 
 
 # ============================================================
 # WhatsApp Cloud API Configuration
 # ============================================================
-WHATSAPP_ACCESS_TOKEN = os.environ.get('WHATSAPP_ACCESS_TOKEN', '')
-WHATSAPP_PHONE_NUMBER_ID = os.environ.get('WHATSAPP_PHONE_NUMBER_ID', '')
+WHATSAPP_ACCESS_TOKEN = config('WHATSAPP_ACCESS_TOKEN', default='')
+WHATSAPP_PHONE_NUMBER_ID = config('WHATSAPP_PHONE_NUMBER_ID', default='')
