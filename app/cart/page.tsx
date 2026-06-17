@@ -2,29 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-<<<<<<< HEAD
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { useAuth } from '@/lib/AuthContext';
 import { useCartStore, useCartTotal } from '@/lib/store';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Trash2, Plus, Minus, ArrowRight, CreditCard, Banknote } from 'lucide-react';
-import { toast } from 'sonner';
-import { Separator } from '@/components/ui/separator';
-=======
-import { useCartStore, useCartTotal } from '@/lib/store';
->>>>>>> ff70d80 (needed fix)
 
 export default function CartPage() {
   const { items, removeItem, updateQuantity, clearCart } = useCartStore();
   const total = useCartTotal();
-<<<<<<< HEAD
-  const { user, userData } = useAuth();
-=======
->>>>>>> ff70d80 (needed fix)
   const router = useRouter();
   const [address, setAddress] = useState('');
   const [isCheckingOut, setIsCheckingOut] = useState(false);

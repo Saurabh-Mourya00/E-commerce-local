@@ -155,17 +155,9 @@ CORS_ALLOW_CREDENTIALS = True
 # ============================================================
 CLOUDINARY_URL = os.environ.get('CLOUDINARY_URL', '')
 
-<<<<<<< HEAD
-if CLOUDINARY_URL and 'dummy' not in CLOUDINARY_URL and '111111111111111' not in CLOUDINARY_URL:
-    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-else:
-    MEDIA_URL = '/media/'
-    MEDIA_ROOT = BASE_DIR / 'media'
-=======
 # Use Cloudinary if real credentials are provided, otherwise local filesystem
 if CLOUDINARY_URL and 'dummy' not in CLOUDINARY_URL and '111111111111111' not in CLOUDINARY_URL:
     DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
->>>>>>> ff70d80 (needed fix)
 
 
 # ============================================================

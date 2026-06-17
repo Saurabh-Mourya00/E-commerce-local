@@ -1,10 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-<<<<<<< HEAD
-=======
 import { useRouter } from 'next/navigation';
->>>>>>> ff70d80 (needed fix)
 import { CATEGORIES, INITIAL_PRODUCTS } from '@/lib/data';
 import { useCartStore, useCartTotal, Product } from '@/lib/store';
 
@@ -13,10 +10,7 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
   const [categories, setCategories] = useState(CATEGORIES);
-<<<<<<< HEAD
-=======
   const [isLoading, setIsLoading] = useState(true);
->>>>>>> ff70d80 (needed fix)
   
   const { items, addItem, removeItem, updateQuantity } = useCartStore();
   const total = useCartTotal();
@@ -28,11 +22,7 @@ export default function Home() {
       try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api';
 
-<<<<<<< HEAD
-        // Fetch products
-=======
         // Fetch products from Django
->>>>>>> ff70d80 (needed fix)
         const prodRes = await fetch(`${apiUrl}/products/`);
         if (prodRes.ok) {
           const data = await prodRes.json();
@@ -40,22 +30,14 @@ export default function Home() {
             const mapped: Product[] = data.map((p: any) => ({
               id: `backend-${p.id}`,
               name: p.name,
-<<<<<<< HEAD
               category: p.category_name || 'Daily Essentials',
-=======
-              category: p.category_name || 'Uncategorized',
->>>>>>> ff70d80 (needed fix)
               price: Number(p.price),
               imageIcon: p.image_icon || '🛒',
               packSize: p.pack_size || '',
               inStock: p.in_stock !== false,
               image: p.image || undefined,
             }));
-<<<<<<< HEAD
-            // Merge: keep local products + add backend products (avoid duplicates by name)
-=======
             // Merge: keep local + add backend (dedupe by name)
->>>>>>> ff70d80 (needed fix)
             setProducts(prev => {
               const localNames = new Set(prev.map(p => p.name.toLowerCase()));
               const newProducts = mapped.filter(p => !localNames.has(p.name.toLowerCase()));
@@ -64,11 +46,7 @@ export default function Home() {
           }
         }
 
-<<<<<<< HEAD
-        // Fetch categories
-=======
         // Fetch categories from Django admin
->>>>>>> ff70d80 (needed fix)
         const catRes = await fetch(`${apiUrl}/categories/`);
         if (catRes.ok) {
           const catData = await catRes.json();
@@ -77,11 +55,7 @@ export default function Home() {
               name: c.name,
               icon: c.icon || '📦',
             }));
-<<<<<<< HEAD
-            // Merge: keep local categories + add any new ones from backend
-=======
             // Merge: keep local + add any new backend categories
->>>>>>> ff70d80 (needed fix)
             setCategories(prev => {
               const localNames = new Set(prev.map(c => c.name.toLowerCase()));
               const newCats = backendCats.filter((c: any) => !localNames.has(c.name.toLowerCase()));
@@ -91,11 +65,8 @@ export default function Home() {
         }
       } catch (err) {
         console.error('Error fetching from Django backend:', err);
-<<<<<<< HEAD
-=======
       } finally {
         setIsLoading(false);
->>>>>>> ff70d80 (needed fix)
       }
     }
     fetchFromBackend();
@@ -225,64 +196,6 @@ export default function Home() {
 
         {/* Product Grid */}
         <div className="col-span-1 md:col-span-9 md:row-span-3 grid grid-cols-2 lg:grid-cols-4 gap-4 overflow-y-auto no-scrollbar pb-2">
-<<<<<<< HEAD
-          {filteredProducts.map((product) => (
-            <div key={product.id} className="bg-white rounded-3xl border border-slate-200 p-4 flex flex-col h-[200px] hover:shadow-md transition-shadow">
-              <div className="bg-slate-50 rounded-2xl h-20 mb-3 flex items-center justify-center text-4xl overflow-hidden relative">
-                {product.image ? (
-                  <img 
-                    src={product.image.startsWith('http') ? product.image : `http://127.0.0.1:8000${product.image}`} 
-                    alt={product.name} 
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  product.imageIcon
-                )}
-              </div>
-              <h4 className="text-sm font-bold text-slate-800 line-clamp-1">{product.name}</h4>
-              <p className="text-[10px] text-slate-400 mt-1">{product.packSize}</p>
-              <div className="mt-auto flex items-center justify-between">
-                <span className="font-bold text-sm text-emerald-600">₹{product.price}</span>
-                {(() => {
-                  const cartItem = items.find(item => item.id === product.id);
-                  if (cartItem) {
-                    return (
-                      <div className="flex items-center gap-1">
-                        <button 
-                          className="w-6 h-6 bg-slate-200 text-slate-700 rounded-full flex items-center justify-center font-bold text-xs active:scale-90 transition-transform hover:bg-slate-300"
-                          onClick={() => {
-                            if (cartItem.quantity <= 1) {
-                              removeItem(product.id);
-                            } else {
-                              updateQuantity(product.id, cartItem.quantity - 1);
-                            }
-                          }}
-                        >
-                          −
-                        </button>
-                        <span className="w-5 text-center text-xs font-bold text-emerald-700">{cartItem.quantity}</span>
-                        <button 
-                          className="w-6 h-6 bg-emerald-600 text-white rounded-full flex items-center justify-center font-bold text-xs active:scale-90 transition-transform"
-                          onClick={() => addItem(product)}
-                        >
-                          +
-                        </button>
-                      </div>
-                    );
-                  }
-                  return (
-                    <button 
-                      className="w-6 h-6 bg-emerald-600 text-white rounded-full flex items-center justify-center font-bold pb-0.5 active:scale-90 transition-transform"
-                      onClick={() => addItem(product)}
-                    >
-                      +
-                    </button>
-                  );
-                })()}
-              </div>
-            </div>
-          ))}
-=======
           {filteredProducts.map((product) => {
             const cartItem = items.find(item => item.id === product.id);
             return (
@@ -336,7 +249,6 @@ export default function Home() {
               </div>
             );
           })}
->>>>>>> ff70d80 (needed fix)
           {filteredProducts.length === 0 && (
              <div className="col-span-full h-full flex items-center justify-center text-slate-400 text-sm font-medium">
                No products found. Try a different category.

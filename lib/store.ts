@@ -52,15 +52,7 @@ export const useCartStore = create<CartState>()((set, get) => ({
   clearCart: () => set({ items: [] }),
 }));
 
-<<<<<<< HEAD
 // Selector to compute the cart total reactively
 export const useCartTotal = () => useCartStore((state) =>
   state.items.reduce((acc, item) => acc + item.price * item.quantity, 0)
 );
-
-=======
-// Reactive selector to compute cart total — re-renders on every items change
-export const useCartTotal = () => useCartStore((state) =>
-  state.items.reduce((acc, item) => acc + item.price * item.quantity, 0)
-);
->>>>>>> ff70d80 (needed fix)
