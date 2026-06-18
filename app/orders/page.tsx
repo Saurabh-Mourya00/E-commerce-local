@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Package, Clock, CheckCircle2, TrendingUp, RefreshCw } from 'lucide-react';
-import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 
 interface OrderItem {
@@ -158,7 +157,7 @@ export default function OrdersPage() {
                 ))}
               </div>
             </CardContent>
-            <Separator />
+            <div className="h-px bg-border" />
             <div className="p-4 bg-muted/20 text-sm flex flex-col sm:flex-row justify-between text-muted-foreground gap-2">
               <p><span className="font-medium text-foreground">Delivering to:</span> {order.deliveryAddress}</p>
               <p><span className="font-medium text-foreground">Payment:</span> {order.paymentMethod.toUpperCase()}</p>
