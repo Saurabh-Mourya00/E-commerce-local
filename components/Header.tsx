@@ -17,29 +17,23 @@ export function Header() {
           <span className="font-bold text-xl inline-block tracking-tight text-green-700">ARMA Store</span>
         </Link>
         <div className="flex items-center space-x-4">
-          <Button variant="ghost" size="icon" asChild>
-            <Link href="/orders">
-              <Package className="h-5 w-5" />
-              <span className="sr-only">Orders</span>
-            </Link>
-          </Button>
-          <Button variant="outline" className="relative" asChild>
-            <Link href="/cart">
-              <ShoppingCart className="h-5 w-5 mr-2" />
-              Cart
-              {itemCount > 0 && (
-                <Badge variant="destructive" className="absolute -top-2 -right-2 px-2 py-0.5 min-w-[20px] h-5 flex items-center justify-center rounded-full text-xs">
-                  {itemCount}
-                </Badge>
-              )}
-            </Link>
-          </Button>
-          <Button variant="ghost" size="icon" asChild>
-            <Link href="/login">
-              <User className="h-5 w-5" />
-              <span className="sr-only">Login</span>
-            </Link>
-          </Button>
+          <Link href="/orders" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-10 w-10">
+            <Package className="h-5 w-5" />
+            <span className="sr-only">Orders</span>
+          </Link>
+          <Link href="/cart" className="relative inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md border border-input bg-background text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
+            <ShoppingCart className="h-5 w-5 mr-2" />
+            Cart
+            {itemCount > 0 && (
+              <Badge variant="destructive" className="absolute -top-2 -right-2 px-2 py-0.5 min-w-[20px] h-5 flex items-center justify-center rounded-full text-xs">
+                {itemCount}
+              </Badge>
+            )}
+          </Link>
+          <Link href="/login" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-10 w-10">
+            <User className="h-5 w-5" />
+            <span className="sr-only">Login</span>
+          </Link>
         </div>
       </div>
     </header>
